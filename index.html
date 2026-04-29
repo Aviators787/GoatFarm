@@ -17,30 +17,9 @@
         .nav-active { color: #3c8d93; font-weight: 700; border-top: 3px solid #3c8d93; }
         
         @media print {
-            nav, header, button, .no-print, #selectAllBtn, .danger-zone, .input-area { display: none !important; }
-            body { background: white; padding: 0; margin: 0; font-size: 9pt; }
-            .tab-content { display: block !important; opacity: 1 !important; position: static !important; width: 100% !important; }
-            #tab-dashboard, #tab-reg { display: none !important; }
-            
-            /* Compact Grid for Print */
-            #herdList { 
-                display: grid !important; 
-                grid-template-columns: repeat(3, 1fr) !important; 
-                gap: 5px !important; 
-            }
-            .card-warm { 
-                box-shadow: none !important; 
-                border: 0.5px solid #ccc !important; 
-                padding: 6px !important; 
-                page-break-inside: avoid; 
-                border-radius: 8px !important;
-            }
-            .card-warm p, .card-warm span { font-size: 8pt !important; }
-            .card-warm .opacity-50 { display: none !important; } /* Hide secondary timestamps to save space */
-            
-            h2 { font-size: 12pt !important; color: black !important; border-bottom: 1px solid #3c8d93; margin: 15px 0 5px 0; }
-            table { width: 100% !important; border: 0.5px solid #eee !important; }
-            th, td { padding: 4px !important; border-bottom: 0.5px solid #eee !important; }
+            nav, header, button, .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .tab-content { display: block !important; }
         }
     </style>
 </head>
@@ -91,7 +70,7 @@
             </div>
 
             <div class="card-warm p-6 rounded-3xl bg-[#d4a373] text-white no-print">
-                <h3 class="text-xs font-bold mb-4 uppercase opacity-80">Settlement (Repayment - Admin Only)</h3>
+                <h3 class="text-xs font-bold mb-4 uppercase opacity-80">Settlement (Internal Dues)</h3>
                 <div class="space-y-3 text-[#434a54]">
                     <div class="grid grid-cols-2 gap-2">
                         <select id="sFrom" onchange="syncReceiverList()" class="p-3 rounded-xl bg-white border-none text-xs font-bold"></select>
@@ -106,6 +85,54 @@
         <section id="tab-assets" class="tab-content">
             <h2 class="text-xs font-black text-[#d4a373] uppercase mb-4 tracking-widest">GoatFarm Assets Inventory</h2>
             <div id="herdList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        </section>
+
+        <section id="tab-vaccine" class="tab-content space-y-6">
+            <div class="card-warm p-6 rounded-3xl border-l-8 border-emerald-500 no-print">
+                <h3 class="text-xs font-bold text-emerald-600 mb-4 uppercase">Log Vaccination</h3>
+                <div class="space-y-3">
+                    <select id="vGoatSelect" class="w-full p-3 bg-[#fdfaf1] rounded-xl text-sm border border-[#ede9dd]"></select>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="vType" class="p-3 bg-[#fdfaf1] rounded-xl text-sm border border-[#ede9dd]">
+                            <option value="PPR">PPR (Annual)</option>
+                            <option value="ET/FMD">ET/FMD (6-Month)</option>
+                            <option value="Goat Pox">Goat Pox (Annual)</option>
+                        </select>
+                        <input id="vDate" type="date" class="p-3 bg-[#fdfaf1] rounded-xl text-sm border border-[#ede9dd]">
+                    </div>
+                    <button onclick="authAction(logVaccine)" class="w-full bg-emerald-600 text-white p-3 rounded-xl font-bold uppercase shadow-md">Record Vaccine Dose</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 no-print">
+                <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                    <p class="text-[10px] font-black text-emerald-700 uppercase mb-1">PPR Vaccine</p>
+                    <p class="text-[8px] text-emerald-800">Interval: Once a year. Avoid during pregnancy.</p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p class="text-[10px] font-black text-blue-700 uppercase mb-1">ET/FMD Combo</p>
+                    <p class="text-[8px] text-blue-800">Interval: Every 6 months. Key before rainy season.</p>
+                </div>
+                <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <p class="text-[10px] font-black text-amber-700 uppercase mb-1">General Caution</p>
+                    <p class="text-[8px] text-amber-800">Deworm 7 days before. Only vaccinate healthy animals.</p>
+                </div>
+            </div>
+
+            <h2 class="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2">Health History Log</h2>
+            <div class="card-warm rounded-3xl overflow-hidden bg-white">
+                <table class="w-full text-left text-[10px] border-collapse">
+                    <thead class="bg-emerald-50">
+                        <tr class="text-emerald-700 font-bold uppercase text-[8px]">
+                            <th class="p-3">Date</th>
+                            <th class="p-3">Tag ID</th>
+                            <th class="p-3">Type</th>
+                            <th class="p-3 text-right no-print">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vaccineLog"></tbody>
+                </table>
+            </div>
         </section>
 
         <section id="tab-reg" class="tab-content space-y-6 no-print">
@@ -127,7 +154,6 @@
                         <select id="gGender" class="p-3 bg-[#fdfaf1] rounded-xl text-sm border border-[#ede9dd]">
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
-                            <option value="Unspecified">Unspecified</option>
                         </select>
                         <input id="gPrice" type="number" placeholder="Cost" class="p-3 bg-[#fdfaf1] rounded-xl text-sm border border-[#ede9dd]">
                     </div>
@@ -141,22 +167,23 @@
             </div>
 
             <div class="p-6 bg-red-50 rounded-3xl border border-red-100 space-y-4">
-                <h3 class="text-[10px] font-black text-red-600 uppercase tracking-widest">Danger Zone</h3>
-                <button onclick="protectedReset('finance')" class="w-full bg-red-600 text-white p-3 rounded-xl text-xs font-bold shadow-lg uppercase">Reset Finances</button>
-                <button onclick="protectedReset('history')" class="w-full border border-red-600 text-red-600 p-3 rounded-xl text-xs font-bold uppercase">Clear History Log</button>
+                <h3 class="text-[10px] font-black text-red-600 uppercase tracking-widest">Danger Zone (Password Protected)</h3>
+                <button onclick="authAction(() => protectedReset('expenses'))" class="w-full bg-red-600 text-white p-3 rounded-xl text-xs font-bold shadow-lg uppercase">Clear Expenses History</button>
+                <button onclick="authAction(() => protectedReset('settlements'))" class="w-full bg-slate-800 text-white p-3 rounded-xl text-xs font-bold shadow-lg uppercase">Clear Settlement Log History</button>
+                <button onclick="authAction(() => protectedReset('vaccine'))" class="w-full border border-emerald-600 text-emerald-600 p-3 rounded-xl text-xs font-bold uppercase">Clear Health Records</button>
             </div>
         </section>
 
         <section id="tab-ledger" class="tab-content">
             <div class="flex justify-between items-center mb-6 no-print">
-                <h2 class="text-xs font-black text-[#d4a373] uppercase tracking-widest">History Log</h2>
+                <h2 class="text-xs font-black text-[#d4a373] uppercase tracking-widest">Financial History Log</h2>
                 <button onclick="window.print()" class="text-[10px] bg-[#3c8d93] text-white px-4 py-2 rounded-lg font-bold shadow-lg uppercase">Print Report</button>
             </div>
             <div class="card-warm rounded-3xl overflow-hidden bg-white">
                 <table class="w-full text-left text-[10px] border-collapse">
                     <thead class="bg-[#f9f7f0]">
                         <tr class="text-[#a69f88] font-bold uppercase text-[8px]">
-                            <th class="p-3">Date & Time</th>
+                            <th class="p-3">Date</th>
                             <th class="p-3">Detail</th>
                             <th class="p-3">By</th>
                             <th class="p-3 text-center">Amt</th>
@@ -171,7 +198,8 @@
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-[#ede9dd] flex justify-around items-center h-16 shadow-2xl z-50 no-print">
         <button onclick="showTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 text-slate-400 p-2 w-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg><span class="text-[8px] font-bold uppercase">Home</span></button>
-        <button onclick="showTab('assets')" id="nav-assets" class="flex flex-col items-center gap-1 text-slate-400 p-2 w-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span class="text-[8px] font-bold uppercase">Assets</span></button>
+        <button onclick="showTab('assets')" id="nav-assets" class="flex flex-col items-center gap-1 text-slate-400 p-2 w-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span class="text-[8px] font-bold uppercase">Assets</span></button>
+        <button onclick="showTab('vaccine')" id="nav-vaccine" class="flex flex-col items-center gap-1 text-slate-400 p-2 w-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg><span class="text-[8px] font-bold uppercase">Vaccine</span></button>
         <button onclick="showTab('reg')" id="nav-reg" class="flex flex-col items-center gap-1 text-slate-400 p-2 w-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg><span class="text-[8px] font-bold uppercase">Admin</span></button>
         <button onclick="showTab('ledger')" id="nav-ledger" class="flex flex-col items-center gap-1 text-slate-400 p-2 w-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><span class="text-[8px] font-bold uppercase">Logs</span></button>
     </nav>
@@ -182,7 +210,7 @@
         const ADMIN_PASS = 'farm123'; 
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let owners = [], goats = [], transactions = [], settlements = [];
+        let owners = [], goats = [], transactions = [], settlements = [], vaccines = [];
 
         function authAction(fn) {
             const pass = prompt("Enter Admin Password:");
@@ -199,6 +227,7 @@
 
         async function init() {
             document.getElementById('gDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('vDate').value = new Date().toISOString().split('T')[0];
             showTab('dashboard');
             await fetchData();
             _supabase.channel('sync').on('postgres_changes', { event: '*', schema: 'public' }, fetchData).subscribe();
@@ -209,16 +238,16 @@
             const { data: g } = await _supabase.from('goats').select('*').order('created_at', { ascending: false });
             const { data: t } = await _supabase.from('transactions').select('*').order('created_at', { ascending: false });
             const { data: s } = await _supabase.from('settlements').select('*').order('created_at', { ascending: false });
-            owners = o || []; goats = g || []; transactions = t || []; settlements = s || [];
+            const { data: v } = await _supabase.from('vaccines').select('*');
+            owners = o || []; goats = g || []; transactions = t || []; settlements = s || []; vaccines = v || [];
             renderUI();
         }
 
-        function toggleSelectAll() {
-            const checkboxes = document.querySelectorAll('.goat-cb');
-            const btn = document.getElementById('selectAllBtn');
-            const allChecked = Array.from(checkboxes).every(c => c.checked);
-            checkboxes.forEach(c => c.checked = !allChecked);
-            btn.innerText = allChecked ? "Select All" : "Deselect All";
+        function getNextDue(type, lastDate) {
+            let d = new Date(lastDate);
+            if(type.includes("PPR") || type.includes("Pox")) d.setFullYear(d.getFullYear() + 1);
+            else if(type.includes("ET")) d.setMonth(d.getMonth() + 6);
+            return d.toISOString().split('T')[0];
         }
 
         function renderUI() {
@@ -228,6 +257,7 @@
             document.getElementById('gOwnerSelect').innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
             document.getElementById('ePayerSelect').innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
             document.getElementById('sFrom').innerHTML = names.map(n => `<option value="${n}">${n}</option>`).join('');
+            document.getElementById('vGoatSelect').innerHTML = goats.map(g => `<option value="${g.name}">${g.name}</option>`).join('');
             
             document.getElementById('goatCheckboxes').innerHTML = goats.map(g => `
                 <label class="flex items-center gap-2 p-2 bg-white rounded-lg border border-[#ede9dd]">
@@ -236,54 +266,58 @@
                 </label>`).join('');
 
             document.getElementById('ownerList').innerHTML = owners.map(o => `
-                <div class="flex justify-between items-center p-3 bg-[#fdfaf1] rounded-xl border border-[#ede9dd]">
-                    <div>
+                <div class="flex flex-col p-3 bg-[#fdfaf1] rounded-xl border border-[#ede9dd]">
+                    <div class="flex justify-between items-center">
                         <span class="text-xs font-bold uppercase">${o.name}</span>
-                        <p class="text-[7px] text-slate-400 font-bold uppercase">${new Date(o.created_at).toLocaleString()}</p>
+                        <button onclick="authAction(() => removeOwner(${o.id}))" class="text-red-400 font-bold">×</button>
                     </div>
-                    <button onclick="authAction(() => removeOwner(${o.id}))" class="text-red-400 font-bold">×</button>
+                    <p class="text-[8px] text-slate-400 font-bold uppercase mt-1">Reg: ${new Date(o.created_at).toLocaleString()}</p>
                 </div>`).join('');
 
-            // Sort goats by owner for the compact printed version
-            const sortedGoats = [...goats].sort((a,b) => a.owner.localeCompare(b.owner));
-            document.getElementById('herdList').innerHTML = sortedGoats.map(g => `
+            document.getElementById('herdList').innerHTML = goats.map(g => {
+                const lastVac = vaccines.filter(v => v.goat_name === g.name).sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+                let vacHtml = '';
+                if(lastVac) {
+                    const due = getNextDue(lastVac.type, lastVac.date);
+                    const isOverdue = new Date(due) < new Date();
+                    vacHtml = `
+                    <p class="text-[7px] text-emerald-600 font-bold uppercase mt-1">💉 ${lastVac.type} (${lastVac.date})</p>
+                    <p class="text-[7px] ${isOverdue ? 'text-red-500 font-black' : 'text-slate-400'} uppercase mt-0.5">🗓 Next Due: ${due} ${isOverdue ? '⚠️' : ''}</p>`;
+                }
+
+                return `
                 <div class="p-4 card-warm rounded-2xl flex flex-col gap-1">
                     <div class="flex justify-between items-center">
-                        <p class="text-xs font-bold text-[#3c8d93]">${g.name} <span class="text-[7px] px-2 py-0.5 rounded ${g.gender === 'Male' ? 'bg-blue-100 text-blue-600' : g.gender === 'Female' ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-600'}">${g.gender}</span></p>
+                        <p class="text-xs font-bold text-[#3c8d93]">${g.name} <span class="text-[7px] px-2 py-0.5 rounded ${g.gender === 'Male' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}">${g.gender}</span></p>
                         <button onclick="authAction(() => removeGoat(${g.id}))" class="text-slate-300 no-print">×</button>
                     </div>
                     <div class="flex justify-between text-[10px] text-[#a69f88] font-bold">
                         <span class="uppercase">${g.owner}</span>
                         <span>${g.is_by_birth ? 'Born' : 'Cost: ' + parseFloat(g.purchase_price).toFixed(0)}</span>
                     </div>
-                    <p class="text-[8px] opacity-50 uppercase mt-1">Registered: ${new Date(g.created_at).toLocaleString()}</p>
-                </div>`).join('');
+                    <p class="text-[7px] text-slate-400 font-bold uppercase">Registered: ${new Date(g.created_at).toLocaleDateString()}</p>
+                    ${vacHtml}
+                </div>`;
+            }).join('');
 
             let summary = {};
             owners.forEach(o => { summary[o.name] = { totalExp: 0, purchasedAsset: 0, balance: 0, count: 0 }; });
             goats.forEach(g => { if(summary[g.owner]) { summary[g.owner].purchasedAsset += parseFloat(g.purchase_price); summary[g.owner].count += 1; } });
-
             transactions.forEach(t => {
                 const is3rd = t.description.includes("Owed to:");
                 if(is3rd) {
                     const tpName = t.description.split("Owed to: ")[1].trim();
                     const key = tpName.toLowerCase();
-                    if(!tpCreditMap[key]) tpCreditMap[key] = { displayName: tpName, amount: 0, stamp: t.created_at, breakdown: {} };
+                    if(!tpCreditMap[key]) tpCreditMap[key] = { displayName: tpName, amount: 0, breakdown: {} };
                     tpCreditMap[key].amount += parseFloat(t.amount);
                     Object.keys(t.owner_shares || {}).forEach(name => {
                         tpCreditMap[key].breakdown[name] = (tpCreditMap[key].breakdown[name] || 0) + t.owner_shares[name];
                     });
-                } else if(summary[t.payer]) {
-                    summary[t.payer].balance += parseFloat(t.amount);
-                }
+                } else if(summary[t.payer]) { summary[t.payer].balance += parseFloat(t.amount); }
                 Object.keys(t.owner_shares || {}).forEach(name => {
-                    if(summary[name]) {
-                        summary[name].totalExp += t.owner_shares[name];
-                        summary[name].balance -= t.owner_shares[name];
-                    }
+                    if(summary[name]) { summary[name].totalExp += t.owner_shares[name]; summary[name].balance -= t.owner_shares[name]; }
                 });
             });
-
             settlements.forEach(s => {
                 const targetKey = s.to_partner.toLowerCase();
                 if(tpCreditMap[targetKey]) {
@@ -295,46 +329,42 @@
                     if(summary[s.to_partner]) summary[s.to_partner].balance -= parseFloat(s.amount);
                 }
             });
-
             window.tpList = Object.keys(tpCreditMap).filter(k => tpCreditMap[k].amount > 0.99).map(k => tpCreditMap[k].displayName);
             syncReceiverList();
 
             const palette = ['bg-[#3c8d93]', 'bg-[#d4a373]', 'bg-[#434a54]'];
             document.getElementById('assetSummary').innerHTML = names.map((n, i) => {
-                let bal = summary[n].balance;
-                let displayBal = Math.abs(bal) < 0.99 ? 0 : bal;
-                return `
-                <div class="${palette[i%3]} p-5 rounded-[2rem] text-white shadow-lg">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold uppercase">${n}</h2>
-                        <span class="bg-white/20 px-3 py-1 rounded-full text-[9px] font-bold uppercase">${summary[n].count} Goats</span>
-                    </div>
-                    <div class="space-y-2 text-[10px] font-black uppercase tracking-tighter">
-                        <div class="flex justify-between border-b border-white/10 pb-1"><span>Purchased Assets</span> <span>${summary[n].purchasedAsset.toFixed(0)}</span></div>
-                        <div class="flex justify-between border-b border-white/10 pb-1"><span>Total Expenses</span> <span>${summary[n].totalExp.toFixed(0)}</span></div>
-                        <div class="flex justify-between pt-1"><span>Balance to Settle</span> <span class="${displayBal < -0.99 ? 'text-red-400 bg-white px-2 rounded-full font-bold' : ''}">${Math.abs(displayBal).toFixed(0)}</span></div>
-                    </div>
-                </div>`;
+                let displayBal = Math.abs(summary[n].balance) < 0.99 ? 0 : summary[n].balance;
+                return `<div class="${palette[i%3]} p-5 rounded-[2rem] text-white shadow-lg"><div class="flex justify-between items-center mb-4"><h2 class="text-lg font-bold uppercase">${n}</h2><span class="bg-white/20 px-3 py-1 rounded-full text-[9px] font-bold uppercase">${summary[n].count} Goats</span></div><div class="space-y-2 text-[10px] font-black uppercase tracking-tighter"><div class="flex justify-between border-b border-white/10 pb-1"><span>Purchased Assets</span> <span>${summary[n].purchasedAsset.toFixed(0)}</span></div><div class="flex justify-between border-b border-white/10 pb-1"><span>Total Expenses</span> <span>${summary[n].totalExp.toFixed(0)}</span></div><div class="flex justify-between pt-1"><span>Balance</span> <span class="${displayBal < -0.99 ? 'text-red-400 bg-white px-2 rounded-full font-bold' : ''}">${Math.abs(displayBal).toFixed(0)}</span></div></div></div>`;
             }).join('');
 
             document.getElementById('thirdPartySummary').innerHTML = Object.entries(tpCreditMap)
                 .filter(([_, data]) => data.amount > 0.99)
-                .map(([_, data]) => {
-                    const breakdownStr = Object.entries(data.breakdown).filter(([_, amt]) => amt > 0.99).map(([name, amt]) => `${name}: ${amt.toFixed(0)}`).join(' | ');
-                    return `<div class="p-3 bg-amber-50 rounded-xl border border-amber-100 shadow-sm"><div class="flex justify-between items-center mb-1"><p class="text-xs font-bold text-amber-800 uppercase">${data.displayName}</p><span class="text-sm font-black text-amber-700">${data.amount.toFixed(0)}</span></div><p class="text-[8px] text-amber-600 font-bold uppercase">${breakdownStr}</p></div>`;
-                }).join('') || '<p class="text-[9px] text-slate-400 italic text-center py-2">No pending credits.</p>';
+                .map(([_, data]) => `<div class="p-3 bg-amber-50 rounded-xl border border-amber-100 shadow-sm"><div class="flex justify-between items-center mb-1"><p class="text-xs font-bold text-amber-800 uppercase">${data.displayName}</p><span class="text-sm font-black text-amber-700">${data.amount.toFixed(0)}</span></div></div>`).join('') || '<p class="text-[9px] text-slate-400 italic text-center py-2">No pending credits.</p>';
 
             const log = [...transactions.map(t => ({...t, type: 'EXP'})), ...settlements.map(s => ({...s, type: 'SET', payer: s.from_partner, description: `Settlement to ${s.to_partner}`}))].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-            document.getElementById('historyLog').innerHTML = log.map(l => `<tr class="border-b"><td class="p-3 text-slate-400 font-bold uppercase text-[7px]">${new Date(l.created_at).toLocaleString()}</td><td class="p-3 font-bold">${l.description}</td><td class="p-3 italic uppercase text-slate-500">${l.payer}</td><td class="p-3 text-center font-bold">${parseFloat(l.amount).toFixed(0)}</td></tr>`).join('');
+            document.getElementById('historyLog').innerHTML = log.map(l => `<tr class="border-b"><td class="p-3 text-slate-400 font-bold uppercase text-[7px]">${new Date(l.created_at).toLocaleDateString()}</td><td class="p-3 font-bold">${l.description}</td><td class="p-3 italic uppercase text-slate-500">${l.payer}</td><td class="p-3 text-center font-bold">${parseFloat(l.amount).toFixed(0)}</td></tr>`).join('');
+
+            document.getElementById('vaccineLog').innerHTML = vaccines.sort((a,b) => new Date(b.date) - new Date(a.date)).map(v => `
+                <tr class="border-b">
+                    <td class="p-3 text-slate-400 font-bold uppercase text-[7px]">${v.date}</td>
+                    <td class="p-3 font-bold text-[#3c8d93]">${v.goat_name}</td>
+                    <td class="p-3 uppercase font-black text-emerald-600">${v.type}</td>
+                    <td class="p-3 text-right no-print"><button onclick="authAction(() => deleteVaccine(${v.id}))" class="text-red-300 font-bold px-2">×</button></td>
+                </tr>`).join('') || '<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No health records.</td></tr>';
         }
 
         async function protectedReset(type) {
-            const pass = prompt("Enter Password:");
-            if(pass !== ADMIN_PASS) return alert("Wrong Password");
-            if(confirm("Confirm action?")) {
-                await _supabase.from('transactions').delete().neq('id', 0);
-                await _supabase.from('settlements').delete().neq('id', 0);
-                fetchData();
+            if(!confirm(`WARNING: Permanent Action. Clear all ${type}?`)) return;
+            
+            let tbl = '';
+            if(type === 'expenses') tbl = 'transactions';
+            else if(type === 'settlements') tbl = 'settlements';
+            else if(type === 'vaccine') tbl = 'vaccines';
+
+            if(tbl) {
+                const { error } = await _supabase.from(tbl).delete().neq('id', 0);
+                if(!error) { alert("Data Cleared."); fetchData(); }
             }
         }
 
@@ -350,6 +380,15 @@
             await _supabase.from('goats').insert([{ name: n, owner: o, purchase_price: parseFloat(p), created_at: d + "T" + new Date().toLocaleTimeString('en-GB') + "Z", gender: g, is_by_birth: b }]);
             document.getElementById('gName').value = ''; fetchData();
         }
+
+        async function logVaccine() {
+            const g = document.getElementById('vGoatSelect').value, t = document.getElementById('vType').value, d = document.getElementById('vDate').value;
+            if(!g || !d) return alert("Select Goat and Date");
+            await _supabase.from('vaccines').insert([{ goat_name: g, type: t, date: d }]);
+            fetchData();
+        }
+
+        async function deleteVaccine(id) { await _supabase.from('vaccines').delete().eq('id', id); fetchData(); }
 
         async function addExpense() {
             const amt = parseFloat(document.getElementById('eAmount').value), p = document.getElementById('ePayerSelect').value, d = document.getElementById('eDesc').value || "Expense", is3rd = document.getElementById('eIsThirdParty').checked, tp = document.getElementById('thirdPartyInput').value;
@@ -372,6 +411,14 @@
             const f = document.getElementById('sFrom').value, t = document.getElementById('sTo');
             const list = [...owners.filter(x => x.name !== f).map(x => x.name), ...window.tpList];
             t.innerHTML = list.map(n => `<option value="${n}">${n}</option>`).join('');
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.goat-cb');
+            const btn = document.getElementById('selectAllBtn');
+            const allChecked = Array.from(checkboxes).every(c => c.checked);
+            checkboxes.forEach(c => c.checked = !allChecked);
+            btn.innerText = allChecked ? "Select All" : "Deselect All";
         }
 
         async function removeOwner(id) { await _supabase.from('owners').delete().eq('id', id); fetchData(); }
