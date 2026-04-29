@@ -209,7 +209,7 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let owners = [], goats = [], transactions = [], settlements = [], vaccines = [];
-        let manager = localStorage.getItem('f_manager') || 'Caretaker';
+        let manager = 'Caretaker'; // Default fallback
 
         function authAction(fn) {
             const pass = prompt("Enter Admin Password:");
@@ -224,12 +224,24 @@
         }
 
         async function init() {
-            document.getElementById('mgrDisplay').innerText = manager;
-            document.getElementById('mgrInput').value = manager;
             document.getElementById('gDate').value = new Date().toISOString().split('T')[0];
             showTab('dashboard');
+            await fetchManager(); // First get the manager name from DB
             await fetchData();
-            _supabase.channel('sync').on('postgres_changes', { event: '*', schema: 'public' }, fetchData).subscribe();
+            _supabase.channel('sync').on('postgres_changes', { event: '*', schema: 'public' }, () => {
+                fetchManager();
+                fetchData();
+            }).subscribe();
+        }
+
+        // NEW SYNC FUNCTION FOR MANAGER
+        async function fetchManager() {
+            const { data } = await _supabase.from('settings').select('value').eq('key', 'manager_name').single();
+            if (data) {
+                manager = data.value;
+                document.getElementById('mgrDisplay').innerText = manager;
+                document.getElementById('mgrInput').value = manager;
+            }
         }
 
         async function fetchData() {
@@ -322,7 +334,6 @@
                 </table>
             `;
 
-            // ASSETS LIST WITH IMPROVED DETAIL
             document.getElementById('herdList').innerHTML = goats.map(g => {
                 const gVac = vaccines.filter(v => v.goat_name === g.name).sort((a,b) => new Date(b.date) - new Date(a.date));
                 const vacHtml = gVac.length ? gVac.slice(0, 2).map(v => `<div class="bg-emerald-50 text-[7px] px-1.5 py-0.5 rounded text-emerald-700 font-bold uppercase">${v.type} (${v.date})</div>`).join('') : '<span class="text-[7px] text-red-300 italic">No vaccines logged</span>';
@@ -402,9 +413,13 @@
             checks.forEach(c => c.checked = !allChecked);
         }
 
-        function saveManager() {
+        // UPDATED SAVE MANAGER TO SYNC TO DB
+        async function saveManager() {
             const n = document.getElementById('mgrInput').value;
-            if(n) { localStorage.setItem('f_manager', n); location.reload(); }
+            if(n) { 
+                const { error } = await _supabase.from('settings').upsert({ key: 'manager_name', value: n }, { onConflict: 'key' });
+                if(!error) { alert("Manager Name Updated on all devices."); fetchManager(); fetchData(); }
+            }
         }
 
         init();
