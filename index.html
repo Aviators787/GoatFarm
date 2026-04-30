@@ -8,6 +8,38 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Sleek Global Logo Watermark */
+body::before {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* REPLACE 'logo.png' WITH YOUR ACTUAL IMAGE LINK OR FILENAME */
+    background-image: url('logo.png'); 
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 80%;      /* Adjust size as needed */
+    height: 80vh;    /* Adjust size as needed */
+    opacity: 0.04;   /* This makes it very faint and classy */
+    pointer-events: none; 
+    z-index: -1; 
+}
+
+/* Tab-specific secondary watermark for depth */
+.tab-content::after {
+    content: "Asset Management System";
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(212, 163, 115, 0.1); /* Faint Tan */
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    z-index: -1;
+}
         body { font-family: 'Quicksand', sans-serif; background-color: #fdfaf1; color: #434a54; padding-bottom: 90px; }
         .tab-content { display: none; animation: fadeIn 0.2s ease; }
         .tab-content.active { display: block; }
@@ -18,15 +50,50 @@
         #printReportHeader { display: none; }
 
         @media print {
+            /* 1. Layout & Visibility */
             nav, header, button, .no-print, #selectAllBtn, .input-area { display: none !important; }
-            body { background: white; padding: 0; margin: 0; font-size: 8pt; }
-            #printReportHeader { display: block !important; margin-bottom: 20px; border: 1px solid #eee; padding: 15px; border-radius: 10px; }
+            body { background: transparent !important; padding: 0; margin: 0; font-size: 8pt; position: relative; }
+            #printReportHeader { display: block !important; margin-bottom: 20px; border: 1px solid #eee; padding: 15px; border-radius: 10px; background: white !important; }
             .tab-content { display: block !important; opacity: 1 !important; position: static !important; width: 100% !important; }
             #tab-dashboard, #tab-reg, #tab-vaccine { display: none !important; }
             #herdList { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 5px !important; }
-            .card-warm { box-shadow: none !important; border: 0.5px solid #ccc !important; padding: 6px !important; page-break-inside: avoid; }
-            table { width: 100% !important; border-collapse: collapse !important; }
-            th, td { border: 0.5px solid #eee !important; padding: 4px !important; }
+            .card-warm { box-shadow: none !important; border: 0.5px solid #ccc !important; padding: 6px !important; page-break-inside: avoid; background: white !important; }
+            table { width: 100% !important; border-collapse: collapse !important; background: transparent !important; }
+            th, td { border: 0.5px solid #eee !important; padding: 4px !important; background: transparent !important; }
+
+            /* 2. Kill all previous small/doubled watermarks */
+            body::before, body::after, html::before, html::after { content: none !important; display: none !important; }
+
+            /* 3. The Forced Master Watermark Overlay */
+            body {
+                background-image: url('logo.png') !important;
+                background-repeat: no-repeat !important;
+                background-attachment: fixed !important;
+                background-position: center 300px !important; /* Positions it in the middle of the page content */
+                background-size: 18cm !important; /* Explicit A4 width (A4 is 21cm wide) */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* 4. Alternate fix: If the background is still hidden, we use a floating div */
+            /* We will ensure the opacity is just right so it pops but doesn't block text */
+            .tab-content::before {
+                content: "";
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 18cm; /* Big size for A4 */
+                height: 18cm;
+                background-image: url('logo.png') !important;
+                background-size: contain !important;
+                background-repeat: no-repeat !important;
+                background-position: center !important;
+                opacity: 0.04 !important; /* Increased slightly for visibility */
+                z-index: 9999 !important; /* Top layer */
+                pointer-events: none;
+                display: block !important;
+            }
         }
     </style>
 </head>
